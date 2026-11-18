@@ -75,13 +75,8 @@ if (!DRY && fs.existsSync(path.join(DIR, 'STOP'))) {
   console.error('REFUSING LIVE START: STOP is present at ' + path.join(DIR, 'STOP') + '. Leave it unless Tuan approves a live start.');
   process.exit(1);
 }
-if (!DRY) { // Tuan rule: live must be identical to dry run (one setting set, same behaviour). Refuse to start while any difference remains.
-  const __parity = require('./parity-check').analyse().debt;
-  if (__parity.length) {
-    console.error('REFUSING LIVE START: live masih berbeda dari dry run: ' + __parity.join(', ') + '. Samakan dulu (node parity-check.js).');
-    process.exit(1);
-  }
-}
+// Public build: starting live is the operator's own decision. `node parity-check.js` remains available as a
+// read-only report of any live vs dry-run divergence; it does not block startup.
 
 const CFG = {
   PAPER, DRY_RUN: DRY,

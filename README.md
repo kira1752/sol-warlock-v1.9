@@ -22,7 +22,7 @@ Bookkeeping gaps closed in 1.9:
 - **Reshape costs are trued-up** to the actual number of transactions sent and their actual fees, instead of a pre-execution guess.
 - Live position polling cadence now matches paper (fast wake while positions are open).
 
-Honest limits: the tested and proven path is **paper mode** plus the accounting code above. Live execution has **not** been mainnet-tested by us yet — the bot therefore keeps live mode behind a verification gate (`live-verification.json`, see `record-live-verification.js` and `parity-check.js`). Test in paper mode first.
+Honest limits: the tested and proven path is **paper mode** plus the accounting code above. Live execution has **not** been mainnet-tested by us yet. Nothing in this build blocks you from running live — whether and when to do so is entirely your own decision and risk. Test in paper mode first.
 
 ## Quick start
 
@@ -41,7 +41,7 @@ node bot.js            # PAPER=true and DRY_RUN=true are the safe defaults
 ## Safety
 
 - **Never commit your `.env`** — it holds your RPC keys and, for live mode, your wallet private key. It is gitignored by default; keep it that way.
-- Live mode additionally requires `LIVE_CONFIRMED` and the verification gate above. Use a fresh, small wallet for any live test.
+- Live mode requires `DRY_RUN=0` and `LIVE_CONFIRMED=1` in your `.env` — your own deliberate opt-in, nothing else gates it. Use a fresh, small wallet for any live test.
 - This software manages real funds in live mode and comes with no warranty. Paper results do not guarantee live results: execution on-chain (fills, slippage, failed transactions) is real even though the bookkeeping now accounts for all of it.
 
 ## Credits & license

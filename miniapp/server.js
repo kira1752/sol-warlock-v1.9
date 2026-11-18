@@ -14,7 +14,7 @@ const screenRefresh=require('../paper-screen-refresh');
 const walletStore = require('../wallet-store');
 const liveControl = require('../live-control');
 const tokenRent = require('../token-rent');
-// Tuan rule: live must equal dry run. Go Live (arm/start) is refused while the parity check finds any difference (fails closed if the check itself errors).
+// Public build: Go Live (arm/start) is the operator's own decision; the parity check is a read-only report and does not block it.
 // ---- token account rent (read-only scan + guarded claim). Never automatic; the claim only runs from an authenticated POST with an explicit phrase.
 // Mints the live bot still holds positions in (any side): their token accounts are never closed, even when momentarily empty.
 function liveProtectedMints(opts) {
@@ -52,7 +52,6 @@ async function rentClaim(opts, secretsDir) {
   });
 }
 
-function liveParityDifferences() { try { return require('../parity-check').analyse().debt; } catch (e) { return ['parity-check error: ' + e.message]; } }
 const telegram = require('../telegram-notify');
 const ROOT = process.env.LP_BOT_DIR || '/workspace/lp-bot';
 
@@ -445,7 +444,6 @@ function createApp(opts = {}) {
       }
 
       if (pathname === '/api/live/arm') {
-        { const par = (opts.parityFn || liveParityDifferences)(); if (par.length) return send(res, 400, { ok: false, error: 'live belum sama dengan dry run; Go Live ditolak', differences: par }); }
         const snap = await liveControl.liveSnapshot({
           secretsDir, stopPath, noNewPath,
           getBalances: opts.getBalances,
@@ -463,7 +461,6 @@ function createApp(opts = {}) {
       }
 
       if (pathname === '/api/live/start') {
-        { const par = (opts.parityFn || liveParityDifferences)(); if (par.length) return send(res, 400, { ok: false, error: 'live belum sama dengan dry run; Go Live ditolak', differences: par }); }
         const phrase = body && String(body.confirm || body.phrase || '');
         if (phrase !== 'LIVE') return send(res, 400, { ok: false, error: 'type LIVE to confirm' });
         const used = arm.consume(body && body.armId, gate.userId);

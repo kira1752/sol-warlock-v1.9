@@ -1,17 +1,13 @@
 'use strict';
-// READ-ONLY static check (Tuan rule, 12 Nov 2026): live and dry run must use ONE setting set and ONE behaviour. No live-only strategy knobs.
+// READ-ONLY static check: live and dry run should use ONE setting set and ONE behaviour. No live-only strategy knobs.
 // Reads bot.js (+ the shared settings schema) only. Never loads state, keys or the network. `node parity-check.js` prints a report; exit 1 on NEW divergence.
+// This is a report only — it does not block live startup. Whether to run live is the operator's own decision.
 const fs = require('fs'), path = require('path');
 const ROOT = __dirname;
 // Execution infrastructure that may differ between modes (not strategy): mode flags, RPC, fees, polling.
-// Code that sends transactions can only be proven on chain. A feature counts as equal to the dry run only after TUAN records a supervised small live test
-// (node record-live-verification.js <feature> "what was tested + tx signatures"). Writing the code is never enough to open Go Live.
-const REQUIRED_VERIFICATIONS = ['entry-geometry', 'swapback', 'usdc-quoted-pools', 'oor-reposition', 'reshape-compound', 'multi-position'];
-function verifications(root) { try { return JSON.parse(fs.readFileSync(path.join(root, 'live-verification.json'), 'utf8')).features || {}; } catch (e) { return {}; } }
 const INFRA_OK = new Set(['DRY_RUN', 'PAPER', 'RPC', 'TX_FEE_SOL', 'SLIPPAGE_PCT', 'PRIORITY_MICROLAMPORTS', 'PAPER_USDC', 'PAPER_VIRTUAL_SOL', 'PAPER_DAYS', 'ONCE', 'POLL_SEC']);
-// Divergences that exist TODAY and are known (12 Nov 2026). New ones fail the test; fixed ones must be removed from this list.
+// Divergences that exist TODAY and are known. New ones fail the test; fixed ones must be removed from this list.
 const KNOWN_DEBT = [
-  'unverified:entry-geometry', 'unverified:swapback', 'unverified:usdc-quoted-pools', 'unverified:oor-reposition', 'unverified:reshape-compound', 'unverified:multi-position',   // each needs a supervised small live test recorded by Tuan
 ];
 function block(src, from, toMarker) { const a = src.indexOf(from); if (a < 0) throw Error('marker not found: ' + from); const b = src.indexOf(toMarker, a); if (b < 0) throw Error('end marker not found: ' + toMarker); return src.slice(a, b); }
 function analyse(root = ROOT) {
@@ -35,8 +31,6 @@ function analyse(root = ROOT) {
   const lo = src.indexOf('async function liveOpen'), liveOpenSrc = src.slice(lo, src.indexOf('async function ', lo + 10));
   if (!/CFG\.POSITION_USDC/.test(liveOpenSrc)) debt.push('logic:live-sizing-ignores-shared-position-budget');
   if (!/liveGeometry\.planEntry\(|strategy\.geometry\(/.test(liveOpenSrc)) debt.push('logic:live-entry-geometry-differs');
-  const ver = verifications(root);
-  for (const f of REQUIRED_VERIFICATIONS) if (!(ver[f] && ver[f].verifiedBy && ver[f].at)) debt.push('unverified:' + f);
   // screening: performScan is shared, but branches gated on policy.PAPER make live screen differently
   const ps = src.indexOf('async function performScan'); const pe = (() => { const m = /\n(?:async )?function /g; m.lastIndex = ps + 20; const r = m.exec(src); return r ? r.index : src.length; })();
   const paperOnly = src.slice(ps, pe).split('\n').filter(l => /policy\.PAPER/.test(l) && !/screenDiagBusy|screenReasons\.evaluate|mkdirSync|writeFileSync|slBlacklist\.read|scan\.liveHistory/.test(l) && !/^\s*if\s*\(policy\.PAPER\)\s*\{\s*$/.test(l));
@@ -56,7 +50,7 @@ function compare(a = analyse()) {
   const resolved = KNOWN_DEBT.filter(d => !a.debt.includes(d));
   return { added, resolved };
 }
-module.exports = { analyse, compare, KNOWN_DEBT, INFRA_OK, REQUIRED_VERIFICATIONS };
+module.exports = { analyse, compare, KNOWN_DEBT, INFRA_OK };
 if (require.main === module) {
   const a = analyse(), c = compare(a);
   console.log(`Setelan bersama menimpa ${a.sharedCount} kunci CFG tiap siklus. Jalur live memakai ${a.usedLive.length} kunci CFG.`);
@@ -64,6 +58,6 @@ if (require.main === module) {
   console.log('\nPERBEDAAN live vs dry run yang masih ada (' + a.debt.length + '):');
   for (const d of a.debt) console.log('  -', d);
   if (c.resolved.length) console.log('\nSudah beres (hapus dari KNOWN_DEBT):', c.resolved.join(', '));
-  if (c.added.length) { console.log('\nPERBEDAAN BARU (dilarang):', c.added.join(', ')); process.exit(1); }
+  if (c.added.length) { console.log('\nPERBEDAAN BARU:', c.added.join(', ')); process.exit(1); }
   console.log('\nTidak ada perbedaan baru dibanding daftar yang diketahui.');
 }

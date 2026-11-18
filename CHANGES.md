@@ -1,5 +1,9 @@
 # Changes
 
+## v1.9.1 (2026-11-18)
+
+- **Gerbang verifikasi live dicabut (build publik):** bot tidak lagi menolak start live dan mini app tidak lagi menolak Go Live berdasarkan catatan verifikasi (`live-verification.json` / `record-live-verification.js` dihapus). `parity-check.js` tetap ada sebagai laporan baca-saja perbedaan live vs dry run; ia tidak memblokir apa pun. Mau live atau tidak = keputusan dan risiko masing-masing operator. Catatan jujur tetap: jalur live belum pernah diuji mainnet oleh kami; uji di paper dulu.
+
 ## v1.8 (2026-11-13)
 
 - **Filter baru (dry run dan live sama):** RugCheck lengket (`RUGCHECK_STICKY_DAYS`, default 7 hari: token yang pernah ditandai bahaya tetap diblok walau laporan berikutnya bersih), pengaman fee turnover (`FEE_TURNOVER_MAX_PCT` 60% untuk TVL di bawah `FEE_TURNOVER_TVL_BELOW_USD` 25000), dan `OOR_RIGHT_MIN_BINS` (reposition/limit OOR kanan baru jalan setelah harga naik N bin di atas range, default 5).
