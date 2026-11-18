@@ -44,8 +44,8 @@ function build(paperDir){
 }
 // LIVE only when the bot config explicitly says live AND the STOP lock is gone; anything else is DRY RUN.
 function mode(env={},stopPresent=true){
-  const paper=String(env.PAPER??'1')!=='0',dry=String(env.DRY_RUN??'1')!=='0',confirmed=String(env.LIVE_CONFIRMED??'0')==='1';
-  const live=!paper&&!dry&&confirmed&&!stopPresent;
-  return {label:live?'LIVE':'DRY RUN',live,paper,dryRun:dry,liveConfirmed:confirmed,stopPresent:!!stopPresent};
+  const paper=String(env.PAPER??'1')!=='0',dry=String(env.DRY_RUN??'1')!=='0';
+  const live=!paper&&!dry&&!stopPresent;
+  return {label:live?'LIVE':'DRY RUN',live,paper,dryRun:dry,stopPresent:!!stopPresent};
 }
 module.exports={build,fromHistory,mode,dayKey,pnlUsdOf,pnlSolOf};

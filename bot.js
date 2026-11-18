@@ -67,10 +67,6 @@ const PAPER = (process.env.PAPER ?? '1') === '1';
 if (PAPER) process.env.DRY_RUN = '1';
 const DRY = (process.env.DRY_RUN ?? '1') !== '0';
 
-if (!DRY && process.env.LIVE_CONFIRMED !== '1') {
-  console.error('REFUSING LIVE START: set DRY_RUN=0 and LIVE_CONFIRMED=1 only after Tuan approves and the wallet is funded.');
-  process.exit(1);
-}
 if (!DRY && fs.existsSync(path.join(DIR, 'STOP'))) {
   console.error('REFUSING LIVE START: STOP is present at ' + path.join(DIR, 'STOP') + '. Leave it unless Tuan approves a live start.');
   process.exit(1);
@@ -1946,8 +1942,8 @@ function addPriority(tx) {
   return tx;
 }
 async function send(tx, signers, label) {
-  if (CFG.PAPER || CFG.DRY_RUN || process.env.LIVE_CONFIRMED !== '1') {
-    throw new Error('send() blocked: paper/dry-run or LIVE_CONFIRMED missing');
+  if (CFG.PAPER || CFG.DRY_RUN) {
+    throw new Error('send() blocked: paper/dry-run');
   }
   addPriority(tx);
   const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash();
@@ -2115,7 +2111,7 @@ async function liveSwapAllToSol(mintX) {
   const q = await jupiterQuote(mintX,SOL,amt,accs.value[0].account.data.parsed.info.tokenAmount.decimals,9);
   if(!q.ok)throw Error('Jupiter token close quote failed: '+q.error);
   log(`  jupiter quote: ${amt} raw token -> ${(+q.outAmount / 1e9).toFixed(5)} SOL, impact=${q.priceImpactPct}`);
-  if (CFG.DRY_RUN || CFG.PAPER || process.env.LIVE_CONFIRMED !== '1') return;
+  if (CFG.DRY_RUN || CFG.PAPER) return;
   const s = await jupGetJSON('https://lite-api.jup.ag/swap/v1/swap', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ quoteResponse: q, ...swapRoute.swapBodyParams(q), userPublicKey: wallet.publicKey.toBase58(), wrapAndUnwrapSol: true, dynamicComputeUnitLimit: true, prioritizationFeeLamports: 'auto' }) });
   const vtx = VersionedTransaction.deserialize(Buffer.from(s.swapTransaction, 'base64')); vtx.sign([wallet]);
   const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash();
@@ -2298,7 +2294,7 @@ async function jupiterSwapLive(inputMint, outputMint, rawAmount, inDec, outDec, 
   const q = await jupiterQuote(inputMint, outputMint, raw, inDec, outDec);
   if (!q.ok) return { ok: false, error: q.error };
   log(`  jupiter ${label}: ${q.inUi} -> ${q.outUi} (quote)`);
-  if (CFG.DRY_RUN || CFG.PAPER || process.env.LIVE_CONFIRMED !== '1') {
+  if (CFG.DRY_RUN || CFG.PAPER) {
     return { ok: true, dry: true, inUi: q.inUi, outUi: q.outUi, quote: q };
   }
   const s = await jupGetJSON('https://lite-api.jup.ag/swap/v1/swap', {
@@ -2547,7 +2543,7 @@ async function liveCycle(state) {
   }
 
   wallet = loadWallet();
-  log(`start: wallet ${wallet.publicKey.toBase58()} rpc=[configured] DRY_RUN=${CFG.DRY_RUN} LIVE_CONFIRMED=${process.env.LIVE_CONFIRMED === '1'} balance=${(await realSolBal(wallet.publicKey)).toFixed(5)} SOL`);
+  log(`start: wallet ${wallet.publicKey.toBase58()} rpc=[configured] DRY_RUN=${CFG.DRY_RUN} balance=${(await realSolBal(wallet.publicKey)).toFixed(5)} SOL`);
   const state = loadState(path.join(DIR, 'state.json'));
   while (true) {
     let exit = false;

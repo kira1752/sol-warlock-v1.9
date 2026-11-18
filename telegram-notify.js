@@ -901,7 +901,7 @@ function notifyLiveChange({ kind, publicAddress, sol, usdc, started, startError,
       `${PREFIX} Tuan, perintah GO LIVE diterima.`,
       '',
       publicAddress ? `Wallet: ${publicAddress}` : '',
-      started ? 'Proses live di-start (DRY_RUN=0 LIVE_CONFIRMED=1, key dari store terenkripsi ke memori saja).' : ('Start proses: ' + (startError || 'belum terkonfirmasi') + '.'),
+      started ? 'Proses live di-start (DRY_RUN=0, key dari store terenkripsi ke memori saja).' : ('Start proses: ' + (startError || 'belum terkonfirmasi') + '.'),
       'paper bot di-pause. STOP live sudah dilepas atas konfirmasi Tuan.',
     ];
   } else if (kind === 'live-no-new') {

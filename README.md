@@ -41,7 +41,7 @@ node bot.js            # PAPER=true and DRY_RUN=true are the safe defaults
 ## Safety
 
 - **Never commit your `.env`** — it holds your RPC keys and, for live mode, your wallet private key. It is gitignored by default; keep it that way.
-- Live mode requires `DRY_RUN=0` and `LIVE_CONFIRMED=1` in your `.env` — your own deliberate opt-in, nothing else gates it. Use a fresh, small wallet for any live test.
+- Live mode is simply `DRY_RUN=0` (or the Go Live button in the miniapp) — no confirmation flags to set, nothing else gates it. Use a fresh, small wallet for any live test.
 - This software manages real funds in live mode and comes with no warranty. Paper results do not guarantee live results: execution on-chain (fills, slippage, failed transactions) is real even though the bookkeeping now accounts for all of it.
 
 ## Credits & license

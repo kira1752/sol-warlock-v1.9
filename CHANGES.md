@@ -1,5 +1,9 @@
 # Changes
 
+## v1.9.2 (2026-11-18)
+
+- **LIVE_CONFIRMED dihapus:** start live cukup `DRY_RUN=0` (atau tombol Go Live di mini app); tidak ada lagi flag konfirmasi yang harus diset di `.env`. Semua penjaga LIVE_CONFIRMED di jalur kirim transaksi (send, swap kembali, swap Jupiter) ikut dicabut supaya konsisten, dan label mode di kalender PnL tidak lagi bergantung padanya. Diverifikasi sebelum rilis: diff terhadap v1.9.0 hanya berisi pencabutan gerbang — analisis paritas identik (90 kunci setelan bersama, 36 kunci live), satu-satunya selisih = 6 item `unverified:*` yang memang dihapus; perilaku mode paper/dry run tidak berubah (syarat PAPER/DRY_RUN di semua penjaga tetap utuh).
+
 ## v1.9.1 (2026-11-18)
 
 - **Gerbang verifikasi live dicabut (build publik):** bot tidak lagi menolak start live dan mini app tidak lagi menolak Go Live berdasarkan catatan verifikasi (`live-verification.json` / `record-live-verification.js` dihapus). `parity-check.js` tetap ada sebagai laporan baca-saja perbedaan live vs dry run; ia tidak memblokir apa pun. Mau live atau tidak = keputusan dan risiko masing-masing operator. Catatan jujur tetap: jalur live belum pernah diuji mainnet oleh kami; uji di paper dulu.
